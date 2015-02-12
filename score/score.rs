@@ -1,7 +1,8 @@
-#![allow(unstable)]
+#![feature(libc, core, test, std_misc)]
 
 extern crate libc;
 extern crate test;
+
 
 use libc::c_char;
 
