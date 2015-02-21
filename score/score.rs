@@ -8,15 +8,15 @@ use libc::c_char;
 
 use std::str::{self, StrExt};
 use std::ascii::AsciiExt;
-use std::ffi;
+use std::ffi::CStr;
 
 #[no_mangle]
 /// External interface for the scoring algorithm
 pub extern "C" fn ext_score(choice: *const c_char, query: *const c_char) -> f64 {
-    let slice = unsafe { ffi::c_str_to_bytes(&choice) };
+    let slice = unsafe { CStr::from_ptr(choice).to_bytes() };
     let choice = str::from_utf8(slice).unwrap();
 
-    let slice = unsafe { ffi::c_str_to_bytes(&query) };
+    let slice = unsafe { CStr::from_ptr(query).to_bytes() };
     let query = str::from_utf8(slice).unwrap();
 
     score(choice, query)
