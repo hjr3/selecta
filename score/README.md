@@ -7,3 +7,7 @@
 ## Test
 
 `cd score && rustc --test score.rs && ./score`
+
+## Bench
+
+`cd score && rustc --test -C opt-level=3 --cfg ndebug score.rs && ./score --bench`
