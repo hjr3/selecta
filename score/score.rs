@@ -1,4 +1,4 @@
-#![feature(libc, core, test, std_misc)]
+#![feature(libc, test, convert)]
 
 extern crate libc;
 extern crate test;
@@ -6,7 +6,7 @@ extern crate test;
 
 use libc::c_char;
 
-use std::str::{self, StrExt};
+use std::str;
 use std::ascii::AsciiExt;
 use std::ffi::CStr;
 
@@ -35,7 +35,7 @@ pub fn score(choice: &str, query: &str) -> f64 {
     let lower_query = query.to_ascii_lowercase();
     let lower_choice_len = lower_choice.len() as f64;
 
-    let match_length = compute_match_length(lower_choice.as_slice(), lower_query.chars().collect());
+    let match_length = compute_match_length(lower_choice.as_ref(), lower_query.chars().collect());
 
     match match_length {
         Some(match_length) => {
@@ -204,8 +204,8 @@ mod tests {
         let expect1 = tight.to_string() + loose;
         let expect2 = loose.to_string() + tight;
 
-        assert!(score(expect1.as_slice(), "12") == 1.0 / expect1.len() as f64);
-        assert!(score(expect2.as_slice(), "12") == 1.0 / expect2.len() as f64);
+        assert!(score(expect1.as_ref(), "12") == 1.0 / expect1.len() as f64);
+        assert!(score(expect2.as_ref(), "12") == 1.0 / expect2.len() as f64);
     }
 
     #[bench]
@@ -226,7 +226,7 @@ mod tests {
     fn bench_paths_non_matching(b: &mut Bencher) {
         b.iter(|| {
             for choice in PATHS.iter() {
-                let _ = score(choice.as_slice(), "xxxxxxxxxxxxxxx");
+                let _ = score(choice.as_ref(), "xxxxxxxxxxxxxxx");
             };
         });
     }
@@ -235,7 +235,7 @@ mod tests {
     fn bench_paths_empty_query(b: &mut Bencher) {
         b.iter(|| {
             for choice in PATHS.iter() {
-                let _ = score(choice.as_slice(), "");
+                let _ = score(choice.as_ref(), "");
             };
         });
     }
@@ -244,7 +244,7 @@ mod tests {
     fn bench_paths_trivial_query(b: &mut Bencher) {
         b.iter(|| {
             for choice in PATHS.iter() {
-                let _ = score(choice.as_slice(), "a");
+                let _ = score(choice.as_ref(), "a");
             };
         });
     }
