@@ -284,7 +284,7 @@ end
 module Score
   extend Fiddle::Importer
 
-  dlload "./score/libscore.so"
+  dlload "./score/target/release/libscore.dylib"
 
   extern "double ext_score(char *, char *)"
 end

@@ -1,13 +1,19 @@
 # Rust Score Algo
 
+The `selecta` ruby program links directly to the release target.
+
 ## Build
 
-`cd score && rustc --crate-type=dylib -o libscore.so score.rs`
+`cargo build`
+
+### Release
+
+`cargo build --release`
 
 ## Test
 
-`cd score && rustc --test score.rs && ./score`
+`cargo test`
 
 ## Bench
 
-`cd score && rustc --test -C opt-level=3 --cfg ndebug score.rs && ./score --bench`
+`cargo bench`
