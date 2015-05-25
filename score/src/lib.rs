@@ -2,7 +2,7 @@ extern crate libc;
 
 use libc::c_char;
 
-use std::str;
+use std::str::from_utf8;
 use std::ascii::AsciiExt;
 use std::ffi::CStr;
 
@@ -10,10 +10,10 @@ use std::ffi::CStr;
 /// External interface for the scoring algorithm
 pub extern "C" fn ext_score(choice: *const c_char, query: *const c_char) -> f64 {
     let slice = unsafe { CStr::from_ptr(choice).to_bytes() };
-    let choice = str::from_utf8(slice).unwrap();
+    let choice = from_utf8(slice).unwrap();
 
     let slice = unsafe { CStr::from_ptr(query).to_bytes() };
-    let query = str::from_utf8(slice).unwrap();
+    let query = from_utf8(slice).unwrap();
 
     score(choice, query)
 }
@@ -27,6 +27,7 @@ pub fn score(choice: &str, query: &str) -> f64 {
         return 0.0;
     }
 
+    // TODO: use UTF-8 versions of `to_lowercase()` when stable.
     let lower_choice = choice.to_ascii_lowercase();
     let lower_query = query.to_ascii_lowercase();
     let lower_choice_len = lower_choice.len() as f64;
@@ -45,8 +46,8 @@ pub fn score(choice: &str, query: &str) -> f64 {
 
 /// Find the length of the shortest substring matching the given characters.
 fn compute_match_length(haystack: &str, needles: Vec<char>) -> Option<usize> {
-    let first_char = needles[0];
-    let rest = &needles[1..];
+    let first_char = needles.first().expect("Unable to get first char of needle");
+    let rest = &needles[1..]; // use tail() whenever it stabilizes
 
     let first_indexes = find_char_in_string(haystack, first_char);
 
@@ -65,12 +66,12 @@ fn compute_match_length(haystack: &str, needles: Vec<char>) -> Option<usize> {
 }
 
 /// Find all occurrences of the character in the string, returning their indexes.
-fn find_char_in_string(haystack: &str, needle: char) -> Vec<usize> {
+fn find_char_in_string(haystack: &str, needle: &char) -> Vec<usize> {
     let mut index: usize = 0;
     let mut indexes = Vec::new();
 
     loop {
-        index = match find_from_offset(haystack, needle, index) {
+        index = match find_from_offset(haystack, *needle, index) {
             Some(i) => {
                 indexes.push(i);
                 i + 1
@@ -103,7 +104,7 @@ fn find_from_offset(haystack: &str, needle: char, offset: usize) -> Option<usize
 
     match index {
         Some(i) => Some(i + offset),
-        None => { return None; },
+        None => None,
     }
 }
 
