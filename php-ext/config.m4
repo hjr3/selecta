@@ -23,8 +23,6 @@ if test "$PHP_SCORE" != "no"; then
       AC_MSG_ERROR([Please reinstall the score rust library])
     fi
 
-    PHP_ADD_INCLUDE(./ffi.h)
-
     PHP_CHECK_LIBRARY(score, ext_score,
     [
         PHP_ADD_LIBRARY_WITH_PATH(score, $SCORE_LIB_DIR, SCORE_SHARED_LIBADD)
