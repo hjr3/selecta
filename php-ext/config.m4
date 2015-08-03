@@ -1,32 +1,39 @@
 PHP_ARG_WITH(score,
     [Whether to enable the "score" extension],
-    [ --enable-score      Enable "score" extension support])
+    [  --enable-score          Enable "score" extension support])
 
 if test "$PHP_SCORE" != "no"; then
 
-    dnl Explicitly define the location of the library.
-    dnl Production extensions should use the example from ext_skel on how to
-    dnl properly check common library directories for the existence of your
-    dnl libs.
-    SCORE_LIB_DIR=/usr/local/lib
+    SEARCH_PATH="/usr/local /usr"
+    SEARCH_FOR="/lib/libscore.so"
+    if test -r $PHP_SCORE/$SEARCH_FOR; then # path given as parameter
+      SCORE_LIB_DIR=$PHP_SCORE
+    else # search default path list
+      AC_MSG_CHECKING([for score files in default path])
+      for i in $SEARCH_PATH ; do
+        if test -r $i/$SEARCH_FOR; then
+          SCORE_LIB_DIR=$i
+          AC_MSG_RESULT(found in $i)
+        fi
+      done
+    fi
 
-    dnl This is the proper way to check for the existance of a library. But...
-    dnl this creates a simple program that expects a .h file that will define
-    dnl our functions. Rust does not provide that, so it fails. There is
-    dnl probably some autotools magic I can do to make this work, but alas.
-    dnl PHP_CHECK_LIBRARY(score, score_ext,
-    dnl [
-    dnl     PHP_ADD_LIBRARY_WITH_PATH(score, $SCORE_LIB_DIR, SCORE_SHARED_LIBADD)
-    dnl     AC_DEFINE(HAVE_SCORE, 1, [Whether you have score])
-    dnl ],[
-    dnl     AC_MSG_ERROR([ext_score function not found in libscore])
-    dnl ],[
-    dnl     -L$SCORE_LIB_DIR -R$SCORE_LIB_DIR
-    dnl ])
+    if test -z "$SCORE_LIB_DIR"; then
+      AC_MSG_RESULT([not found])
+      AC_MSG_ERROR([Please reinstall the score rust library])
+    fi
 
-    dnl Just blindly assume our libscore.so library exists
-    PHP_ADD_LIBRARY_WITH_PATH(score, $SCORE_LIB_DIR, SCORE_SHARED_LIBADD)
-    -L$SCORE_LIB_DIR -R$SCORE_LIB_DIR
+    PHP_ADD_INCLUDE(./ffi.h)
+
+    PHP_CHECK_LIBRARY(score, ext_score,
+    [
+        PHP_ADD_LIBRARY_WITH_PATH(score, $SCORE_LIB_DIR, SCORE_SHARED_LIBADD)
+        AC_DEFINE(HAVE_SCORE, 1, [Whether you have score])
+    ],[
+        AC_MSG_ERROR([ext_score function not found in libscore])
+    ],[
+        -L$SCORE_LIB_DIR -R$SCORE_LIB_DIR
+    ])
 
     PHP_SUBST(SCORE_SHARED_LIBADD)
     PHP_NEW_EXTENSION(score, score.c, $ext_shared)
